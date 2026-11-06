@@ -9,10 +9,4 @@ One-click reports: export data to CSV and JSON
 REST API: programmatic access to student, course and grade data
 Two interfaces: a responsive web dashboard and a menu-driven command-line interface (CLI)
 Secure by design: parameterized SQL queries and regex-based input validation to prevent SQL injection
-Tech Stack
- Area	     -     Tools
-Backend	      Python, Flask
-Database    	SQLite, MySQL
-Frontend	    HTML, Tailwind CSS, Chart.js
-Interfaces	  Web dashboard, CLI
-Testing	      Automated unit and security tests
+
