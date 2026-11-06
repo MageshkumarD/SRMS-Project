@@ -1,0 +1,24 @@
+enrollment_id,student_code,student_name,email,course_code,course_name,credits,semester,numeric_score,letter_grade,grade_point,status,enrollment_date,grade_date
+3,STU-1001,Emma Watson,emma.watson@university.edu,CS201,Data Structures & Algorithms,4,Spring 2026,98.0,A+,4.0,Completed,2026-01-10,2026-05-15
+8,STU-1002,Liam Chen,liam.chen@university.edu,MATH201,Linear Algebra,3,Spring 2026,84.5,B,3.0,Completed,2026-01-10,2026-05-15
+11,STU-1003,Sophia Rodriguez,sophia.r@university.edu,PHYS101,Classical Mechanics,4,Spring 2026,89.0,B+,3.3,Completed,2026-01-10,2026-05-15
+18,STU-1006,Lucas Dubois,lucas.d@university.edu,MATH101,Calculus I,4,Spring 2026,81.0,B-,2.7,Completed,2026-01-10,2026-05-15
+23,STU-1009,Isabella Silva,isabella.s@university.edu,MATH101,Calculus I,4,Spring 2026,88.0,B+,3.3,Completed,2026-01-10,2026-05-15
+6,STU-1002,Liam Chen,liam.chen@university.edu,CS201,Data Structures & Algorithms,4,Spring 2025,91.0,A-,3.7,Completed,2025-01-10,2025-05-15
+16,STU-1005,Ava Kowalski,ava.k@university.edu,PHYS101,Classical Mechanics,4,Spring 2025,87.0,B+,3.3,Completed,2025-01-10,2025-05-15
+20,STU-1007,Mia Tanaka,mia.tanaka@university.edu,CS201,Data Structures & Algorithms,4,Spring 2025,96.5,A,4.0,Completed,2025-01-10,2025-05-15
+13,STU-1004,Noah Patel,noah.patel@university.edu,MATH201,Linear Algebra,3,Spring 2024,82.0,B-,2.7,Completed,2024-01-10,2024-05-15
+4,STU-1001,Emma Watson,emma.watson@university.edu,CS301,Database Systems & Design,3,Fall 2026,,,,Enrolled,2026-09-01,
+2,STU-1001,Emma Watson,emma.watson@university.edu,MATH101,Calculus I,4,Fall 2025,92.0,A-,3.7,Completed,2025-09-05,2025-12-20
+1,STU-1001,Emma Watson,emma.watson@university.edu,CS101,Introduction to Computer Science,4,Fall 2025,95.5,A,4.0,Completed,2025-09-05,2025-12-20
+7,STU-1002,Liam Chen,liam.chen@university.edu,CS301,Database Systems & Design,3,Fall 2025,86.0,B,3.0,Completed,2025-09-05,2025-12-20
+10,STU-1003,Sophia Rodriguez,sophia.r@university.edu,MATH101,Calculus I,4,Fall 2025,96.0,A,4.0,Completed,2025-09-05,2025-12-20
+9,STU-1003,Sophia Rodriguez,sophia.r@university.edu,CS101,Introduction to Computer Science,4,Fall 2025,94.0,A,4.0,Completed,2025-09-05,2025-12-20
+17,STU-1006,Lucas Dubois,lucas.d@university.edu,EE101,Circuits and Electronics,3,Fall 2025,83.0,B,3.0,Completed,2025-09-05,2025-12-20
+21,STU-1007,Mia Tanaka,mia.tanaka@university.edu,CS301,Database Systems & Design,3,Fall 2025,99.0,A+,4.0,Completed,2025-09-05,2025-12-20
+22,STU-1009,Isabella Silva,isabella.s@university.edu,CS101,Introduction to Computer Science,4,Fall 2025,90.0,A-,3.7,Completed,2025-09-05,2025-12-20
+5,STU-1002,Liam Chen,liam.chen@university.edu,CS101,Introduction to Computer Science,4,Fall 2024,88.5,B+,3.3,Completed,2024-09-05,2024-12-20
+14,STU-1004,Noah Patel,noah.patel@university.edu,CS101,Introduction to Computer Science,4,Fall 2024,75.0,C,2.0,Completed,2024-09-05,2024-12-20
+15,STU-1005,Ava Kowalski,ava.k@university.edu,BIO101,General Biology,3,Fall 2024,91.5,A-,3.7,Completed,2024-09-05,2024-12-20
+19,STU-1007,Mia Tanaka,mia.tanaka@university.edu,CS101,Introduction to Computer Science,4,Fall 2024,97.0,A+,4.0,Completed,2024-09-05,2024-12-20
+12,STU-1004,Noah Patel,noah.patel@university.edu,MATH101,Calculus I,4,Fall 2023,78.0,C+,2.3,Completed,2023-09-05,2023-12-20

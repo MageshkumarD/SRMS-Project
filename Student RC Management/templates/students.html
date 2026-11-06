@@ -1,0 +1,474 @@
+{% extends "base.html" %}
+
+{% block title %}Students • Student Records Management System{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-extrabold text-slate-800">Student Directory</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Manage student identities, enrollment standing, and official transcripts.</p>
+        </div>
+        <button onclick="openModal('addStudentModal')" class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition">
+            <i class="fa-solid fa-user-plus mr-2"></i> Add New Student
+        </button>
+    </div>
+
+    <!-- Filter & Live Search Bar -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div class="relative w-full md:w-96">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+            <input type="text" id="studentSearch" onkeyup="filterStudents()" placeholder="Search by name, student code, email..." class="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+        </div>
+        <div class="flex items-center space-x-2 w-full md:w-auto">
+            <span class="text-xs font-semibold text-slate-400">Status:</span>
+            <select id="statusFilter" onchange="filterStudents()" class="text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="ALL">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Graduated">Graduated</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Withdrawn">Withdrawn</option>
+            </select>
+            <span class="text-xs text-slate-400 pl-2">Total: <strong id="studentCount" class="text-slate-700">{{ students|length }}</strong></span>
+        </div>
+    </div>
+
+    <!-- Students Data Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm" id="studentTable">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                        <th class="py-3 px-6">Student Code</th>
+                        <th class="py-3 px-6">Full Name</th>
+                        <th class="py-3 px-6">Email Address</th>
+                        <th class="py-3 px-6">Phone</th>
+                        <th class="py-3 px-6">Enrolled Date</th>
+                        <th class="py-3 px-6">Status</th>
+                        <th class="py-3 px-6 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for s in students %}
+                    <tr class="hover:bg-slate-50/80 transition student-row" data-code="{{ s.student_code|lower }}" data-name="{{ s.full_name|lower }}" data-email="{{ s.email|lower }}" data-status="{{ s.status }}">
+                        <td class="py-3.5 px-6 font-mono font-bold text-blue-700 text-xs">{{ s.student_code }}</td>
+                        <td class="py-3.5 px-6 font-semibold text-slate-900">{{ s.full_name }}</td>
+                        <td class="py-3.5 px-6 text-slate-500">{{ s.email }}</td>
+                        <td class="py-3.5 px-6 text-slate-500">{{ s.phone or '-' }}</td>
+                        <td class="py-3.5 px-6 text-slate-500 text-xs">{{ s.enrollment_date }}</td>
+                        <td class="py-3.5 px-6">
+                            {% if s.status == 'Active' %}
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Active</span>
+                            {% elif s.status == 'Graduated' %}
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">Graduated</span>
+                            {% elif s.status == 'Suspended' %}
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-50 text-rose-700 border border-rose-200">Suspended</span>
+                            {% else %}
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 border border-slate-200">{{ s.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3.5 px-6 text-center whitespace-nowrap">
+                            <div class="inline-flex items-center space-x-1">
+                                <button onclick="viewTranscript({{ s.student_id }})" title="View Transcript / Report Card" class="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition">
+                                    <i class="fa-solid fa-file-lines text-base"></i>
+                                </button>
+                                <button onclick="openEditModal({{ s.student_id }})" title="Edit Student" class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition">
+                                    <i class="fa-solid fa-pen text-base"></i>
+                                </button>
+                                <button onclick="confirmDeleteStudent({{ s.student_id }}, '{{ s.student_code }}', '{{ s.full_name }}')" title="Delete Student" class="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition">
+                                    <i class="fa-solid fa-trash-can text-base"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr id="noRecordsRow">
+                        <td colspan="7" class="text-center py-10 text-slate-400">
+                            No student records found in database. Click "Add New Student" to get started.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 1: ADD STUDENT -->
+<!-- ========================================================================= -->
+<div id="addStudentModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 transform transition-all">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center">
+                <i class="fa-solid fa-user-plus text-blue-600 mr-2"></i> Register New Student
+            </h3>
+            <button onclick="closeModal('addStudentModal')" class="text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <form id="addStudentForm" onsubmit="submitAddStudent(event)" class="mt-4 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Student ID Code *</label>
+                    <input type="text" name="student_code" required placeholder="e.g. STU-1011" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 uppercase font-mono focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Status *</label>
+                    <select name="status" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="Active">Active</option>
+                        <option value="Graduated">Graduated</option>
+                        <option value="Suspended">Suspended</option>
+                        <option value="Withdrawn">Withdrawn</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">First Name *</label>
+                    <input type="text" name="first_name" required placeholder="Jane" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Last Name *</label>
+                    <input type="text" name="last_name" required placeholder="Doe" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                <input type="email" name="email" required placeholder="jane.doe@university.edu" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Contact Phone (Optional)</label>
+                <input type="text" name="phone" placeholder="+1-555-0199" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Date of Birth *</label>
+                    <input type="date" name="date_of_birth" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Enrollment Date *</label>
+                    <input type="date" name="enrollment_date" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+                </div>
+            </div>
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                <button type="button" onclick="closeModal('addStudentModal')" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancel</button>
+                <button type="submit" class="px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition">Create Student Record</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 2: EDIT STUDENT -->
+<!-- ========================================================================= -->
+<div id="editStudentModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center">
+                <i class="fa-solid fa-user-pen text-amber-500 mr-2"></i> Edit Student Record
+            </h3>
+            <button onclick="closeModal('editStudentModal')" class="text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <form id="editStudentForm" onsubmit="submitEditStudent(event)" class="mt-4 space-y-4">
+            <input type="hidden" name="student_id" id="edit_student_id">
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Student Identifier</label>
+                <input type="text" id="edit_student_code" disabled class="w-full text-sm bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-slate-500 font-mono font-bold">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">First Name *</label>
+                    <input type="text" name="first_name" id="edit_first_name" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Last Name *</label>
+                    <input type="text" name="last_name" id="edit_last_name" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address *</label>
+                <input type="email" name="email" id="edit_email" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Contact Phone</label>
+                <input type="text" name="phone" id="edit_phone" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Academic Standing *</label>
+                <select name="status" id="edit_status" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <option value="Active">Active</option>
+                    <option value="Graduated">Graduated</option>
+                    <option value="Suspended">Suspended</option>
+                    <option value="Withdrawn">Withdrawn</option>
+                </select>
+            </div>
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                <button type="button" onclick="closeModal('editStudentModal')" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancel</button>
+                <button type="submit" class="px-5 py-2 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-sm transition">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 3: OFFICIAL TRANSCRIPT / REPORT CARD -->
+<!-- ========================================================================= -->
+<div id="transcriptModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 my-8">
+        <div class="flex items-start justify-between pb-6 border-b border-slate-100">
+            <div>
+                <div class="flex items-center space-x-2 text-xs font-bold text-blue-600 uppercase tracking-widest">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>Official Academic Transcript</span>
+                </div>
+                <h3 id="transcriptStudentName" class="text-2xl font-black text-slate-900 mt-1">Student Transcript</h3>
+                <p id="transcriptStudentMeta" class="text-xs text-slate-500 font-mono"></p>
+            </div>
+            <button onclick="closeModal('transcriptModal')" class="text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Transcript Stats Card -->
+        <div class="grid grid-cols-3 gap-4 my-6 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+            <div class="text-center">
+                <p class="text-xs font-bold text-slate-400 uppercase">Cumulative GPA</p>
+                <h4 id="transcriptGPA" class="text-2xl font-black text-emerald-600 mt-0.5">0.00</h4>
+                <p class="text-[10px] text-slate-400 font-semibold">4.0 Scale</p>
+            </div>
+            <div class="text-center border-x border-slate-200">
+                <p class="text-xs font-bold text-slate-400 uppercase">Credits Attempted</p>
+                <h4 id="transcriptAttempted" class="text-2xl font-black text-slate-800 mt-0.5">0</h4>
+                <p class="text-[10px] text-slate-400 font-semibold">Total Credit Hours</p>
+            </div>
+            <div class="text-center">
+                <p class="text-xs font-bold text-slate-400 uppercase">Credits Earned</p>
+                <h4 id="transcriptEarned" class="text-2xl font-black text-blue-600 mt-0.5">0</h4>
+                <p class="text-[10px] text-slate-400 font-semibold">Passing Grades</p>
+            </div>
+        </div>
+
+        <!-- Transcript Course Table -->
+        <div class="overflow-x-auto max-h-72 overflow-y-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-600 font-bold uppercase sticky top-0">
+                        <th class="py-2.5 px-4">Semester</th>
+                        <th class="py-2.5 px-4">Course</th>
+                        <th class="py-2.5 px-4">Title</th>
+                        <th class="py-2.5 px-4 text-center">Credits</th>
+                        <th class="py-2.5 px-4 text-center">Score</th>
+                        <th class="py-2.5 px-4 text-center">Grade</th>
+                        <th class="py-2.5 px-4 text-right">Points</th>
+                    </tr>
+                </thead>
+                <tbody id="transcriptCourseRows" class="divide-y divide-slate-100 text-slate-700">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-400 font-medium">Institution Verified • SRMS Relational Engine</span>
+            <button onclick="window.print()" class="px-4 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition">
+                <i class="fa-solid fa-print mr-1"></i> Print Transcript
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    // Live search & status filter
+    function filterStudents() {
+        const query = document.getElementById('studentSearch').value.toLowerCase().trim();
+        const status = document.getElementById('statusFilter').value;
+        const rows = document.querySelectorAll('.student-row');
+        let count = 0;
+
+        rows.forEach(row => {
+            const code = row.getAttribute('data-code');
+            const name = row.getAttribute('data-name');
+            const email = row.getAttribute('data-email');
+            const rowStatus = row.getAttribute('data-status');
+
+            const matchesQuery = !query || code.includes(query) || name.includes(query) || email.includes(query);
+            const matchesStatus = status === 'ALL' || rowStatus === status;
+
+            if (matchesQuery && matchesStatus) {
+                row.style.display = '';
+                count++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        document.getElementById('studentCount').innerText = count;
+    }
+
+    // Submit Add Student
+    async function submitAddStudent(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, 'success');
+                closeModal('addStudentModal');
+                setTimeout(() => location.reload(), 600);
+            } else {
+                showToast(data.error || 'Failed to create student', 'error');
+            }
+        } catch (err) {
+            showToast('Network error while saving student', 'error');
+        }
+    }
+
+    // Open Edit Modal
+    async function openEditModal(studentId) {
+        try {
+            const res = await fetch(`/api/students/${studentId}`);
+            const data = await res.json();
+            if (!data.success) {
+                showToast(data.error || 'Student not found', 'error');
+                return;
+            }
+            const student = data.student;
+            document.getElementById('edit_student_id').value = student.student_id;
+            document.getElementById('edit_student_code').value = student.student_code;
+            document.getElementById('edit_first_name').value = student.first_name;
+            document.getElementById('edit_last_name').value = student.last_name;
+            document.getElementById('edit_email').value = student.email;
+            document.getElementById('edit_phone').value = student.phone || '';
+            document.getElementById('edit_status').value = student.status;
+            openModal('editStudentModal');
+        } catch (err) {
+            showToast('Failed to load student details', 'error');
+        }
+    }
+
+    // Submit Edit Student
+    async function submitEditStudent(e) {
+        e.preventDefault();
+        const studentId = document.getElementById('edit_student_id').value;
+        const payload = {
+            first_name: document.getElementById('edit_first_name').value.trim(),
+            last_name: document.getElementById('edit_last_name').value.trim(),
+            email: document.getElementById('edit_email').value.trim(),
+            phone: document.getElementById('edit_phone').value.trim() || null,
+            status: document.getElementById('edit_status').value
+        };
+
+        try {
+            const res = await fetch(`/api/students/${studentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, 'success');
+                closeModal('editStudentModal');
+                setTimeout(() => location.reload(), 600);
+            } else {
+                showToast(data.error || 'Failed to update student', 'error');
+            }
+        } catch (err) {
+            showToast('Network error while updating student', 'error');
+        }
+    }
+
+    // Delete Student
+    async function confirmDeleteStudent(studentId, code, name) {
+        if (!confirm(`Are you sure you want to permanently delete ${name} (${code})?\nAll grades and enrollments will be wiped!`)) return;
+
+        try {
+            const res = await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 600);
+            } else {
+                showToast(data.error || 'Failed to delete student', 'error');
+            }
+        } catch (err) {
+            showToast('Network error while deleting', 'error');
+        }
+    }
+
+    // View Transcript
+    async function viewTranscript(studentId) {
+        try {
+            const res = await fetch(`/api/students/${studentId}/transcript`);
+            const data = await res.json();
+            if (!data.success) {
+                showToast(data.error || 'Transcript not found', 'error');
+                return;
+            }
+
+            const s = data.student;
+            document.getElementById('transcriptStudentName').innerText = `${s.first_name} ${s.last_name}`;
+            document.getElementById('transcriptStudentMeta').innerText = `ID: ${s.student_code} • ${s.email} • Status: ${s.status}`;
+            document.getElementById('transcriptGPA').innerText = parseFloat(data.cumulative_gpa).toFixed(2);
+            document.getElementById('transcriptAttempted').innerText = data.total_credits_attempted;
+            document.getElementById('transcriptEarned').innerText = data.total_credits_earned;
+
+            const tbody = document.getElementById('transcriptCourseRows');
+            tbody.innerHTML = '';
+
+            if (!data.courses || data.courses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">No courses taken yet.</td></tr>`;
+            } else {
+                data.courses.forEach(c => {
+                    const score = c.numeric_score !== null ? `${c.numeric_score}%` : '-';
+                    const grade = c.letter_grade || '-';
+                    const points = c.grade_point !== null ? parseFloat(c.grade_point).toFixed(2) : '-';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="py-2.5 px-4 font-medium text-slate-500">${c.semester}</td>
+                            <td class="py-2.5 px-4 font-bold text-blue-700">${c.course_code}</td>
+                            <td class="py-2.5 px-4 text-slate-800">${c.course_name}</td>
+                            <td class="py-2.5 px-4 text-center">${c.credits}</td>
+                            <td class="py-2.5 px-4 text-center">${score}</td>
+                            <td class="py-2.5 px-4 text-center font-bold text-slate-900">${grade}</td>
+                            <td class="py-2.5 px-4 text-right font-mono">${points}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            openModal('transcriptModal');
+        } catch (err) {
+            showToast('Failed to load student transcript', 'error');
+        }
+    }
+
+    // Auto-open transcript if URL has ?view=id
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewId = urlParams.get('view');
+        if (viewId) {
+            viewTranscript(viewId);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+student_id,student_code,first_name,last_name,email,phone,date_of_birth,enrollment_date,status,created_at,updated_at
+1,STU-1001,Emma,Watson,emma.watson@university.edu,+1-555-0101,2004-04-15,2023-09-01,Active,2026-11-05 10:22:48,2026-11-05 10:22:48
+2,STU-1002,Liam,Chen,liam.chen@university.edu,+1-555-0102,2003-11-20,2022-09-01,Active,2026-11-05 10:22:48,2026-11-05 10:22:48
+3,STU-1003,Sophia,Rodriguez,sophia.r@university.edu,+1-555-0103,2004-02-10,2023-09-01,Active,2026-11-05 10:22:48,2026-11-05 10:22:48
+4,STU-1004,Noah,Patel,noah.patel@university.edu,+1-555-0104,2002-08-30,2021-09-01,Active,2026-11-05 10:22:48,2026-11-05 10:22:48
+5,STU-1005,Ava,Kowalski,ava.k@university.edu,+1-555-0105,2003-05-18,2022-09-01,Active,2026-11-05 10:22:48,2026-11-05 10:22:48
+6,STU-1006,Lucas,Dubois,lucas.d@university.edu,+1-555-0106,2004-09-12,2023-09-01,Active,2026-11-05 10:22:48,2026-11-05 10:22:48
+7,STU-1007,Mia,Tanaka,mia.tanaka@university.edu,+1-555-0107,2003-12-05,2022-09-01,Active,2026-11-05 10:22:48,2026-11-05 10:22:48
+8,STU-1008,Ethan,Miller,ethan.m@university.edu,+1-555-0108,2001-07-22,2020-09-01,Graduated,2026-11-05 10:22:48,2026-11-05 10:22:48
+9,STU-1009,Isabella,Silva,isabella.s@university.edu,+1-555-0109,2004-03-14,2023-09-01,Active,2026-11-05 10:22:48,2026-11-05 10:22:48
+10,STU-1010,Alexander,Wright,alex.w@university.edu,+1-555-0110,2003-10-09,2022-09-01,Suspended,2026-11-05 10:22:48,2026-11-05 10:22:48

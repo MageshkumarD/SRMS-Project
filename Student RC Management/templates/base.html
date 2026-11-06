@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Records Management System{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-header {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        body.modal-active {
+            overflow-x: hidden;
+            overflow-y: visible !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 border-b border-slate-200 glass-header shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-800 leading-tight">
+                        SRMS Portal
+                    </h1>
+                    <p class="text-xs text-slate-500 font-medium">Student Records Management System</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex space-x-1">
+                <a href="/" class="px-3 py-2 rounded-lg text-sm font-semibold transition {% if active_page == 'dashboard' %}bg-blue-50 text-blue-700{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                    <i class="fa-solid fa-chart-pie mr-1.5"></i> Dashboard
+                </a>
+                <a href="/students" class="px-3 py-2 rounded-lg text-sm font-semibold transition {% if active_page == 'students' %}bg-blue-50 text-blue-700{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                    <i class="fa-solid fa-user-graduate mr-1.5"></i> Students
+                </a>
+                <a href="/courses" class="px-3 py-2 rounded-lg text-sm font-semibold transition {% if active_page == 'courses' %}bg-blue-50 text-blue-700{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                    <i class="fa-solid fa-book-bookmark mr-1.5"></i> Courses
+                </a>
+                <a href="/grades" class="px-3 py-2 rounded-lg text-sm font-semibold transition {% if active_page == 'grades' %}bg-blue-50 text-blue-700{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                    <i class="fa-solid fa-pen-ruler mr-1.5"></i> Grades & Enrollment
+                </a>
+                <a href="/reports" class="px-3 py-2 rounded-lg text-sm font-semibold transition {% if active_page == 'reports' %}bg-blue-50 text-blue-700{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                    <i class="fa-solid fa-file-invoice mr-1.5"></i> Reports & Export
+                </a>
+            </nav>
+
+            <!-- Quick Action Badges -->
+            <div class="flex items-center space-x-3">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                    {{ db_engine | upper }} Active
+                </span>
+                <button onclick="seedDatabase()" title="Populate Demo Records" class="hidden sm:inline-flex items-center text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 shadow-sm transition">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1 text-indigo-500"></i> Seed Sample Data
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Nav Bar -->
+    <div class="md:hidden bg-white border-b border-slate-200 px-4 py-2 flex justify-between overflow-x-auto text-xs font-medium">
+        <a href="/" class="py-1 px-2.5 rounded {% if active_page == 'dashboard' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-600{% endif %}">Dashboard</a>
+        <a href="/students" class="py-1 px-2.5 rounded {% if active_page == 'students' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-600{% endif %}">Students</a>
+        <a href="/courses" class="py-1 px-2.5 rounded {% if active_page == 'courses' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-600{% endif %}">Courses</a>
+        <a href="/grades" class="py-1 px-2.5 rounded {% if active_page == 'grades' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-600{% endif %}">Grades</a>
+        <a href="/reports" class="py-1 px-2.5 rounded {% if active_page == 'reports' %}bg-blue-50 text-blue-700 font-bold{% else %}text-slate-600{% endif %}">Reports</a>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <!-- Notification Banner Container -->
+        <div id="toast-container" class="fixed top-20 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
+            <p>© 2026 Student Records Management System • 3NF Normalized SQL Architecture</p>
+            <p class="flex items-center space-x-2">
+                <span class="text-slate-400">Security: Parameterized Queries</span>
+                <span>•</span>
+                <span class="text-blue-600 font-medium">Python 3.14 & SQLite / MySQL</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Shared Notification & Helper Script -->
+    <script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-blue-600');
+            const icon = type === 'success' ? 'fa-check' : (type === 'error' ? 'fa-xmark' : 'fa-circle-info');
+            
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 pointer-events-auto transition transform translate-y-2 text-sm font-medium`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        async function seedDatabase() {
+            if (!confirm('Populate database with sample departments, students, courses, and grades?')) return;
+            try {
+                const res = await fetch('/api/seed', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    showToast(data.error || 'Failed to seed database', 'error');
+                }
+            } catch (err) {
+                showToast('Network error while seeding', 'error');
+            }
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Exports • Student Records Management System{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-extrabold text-slate-800">Academic Analytics & Exports</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Dean's honor list calculations, departmental statistics, and automated CSV/JSON reporting.</p>
+        </div>
+    </div>
+
+    <!-- Data Export Action Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Export 1: Students CSV -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg mb-3">
+                    <i class="fa-solid fa-file-csv"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">Student Profiles CSV</h3>
+                <p class="text-xs text-slate-500 mt-1">Export full directory of registered students, contact emails, and active standings.</p>
+            </div>
+            <a href="/export/students.csv" download class="mt-5 w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs text-center flex items-center justify-center space-x-2 transition shadow-sm">
+                <i class="fa-solid fa-download"></i>
+                <span>Download students_export.csv</span>
+            </a>
+        </div>
+
+        <!-- Export 2: Grades CSV -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg mb-3">
+                    <i class="fa-solid fa-file-excel"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">Course Grades & Transcripts</h3>
+                <p class="text-xs text-slate-500 mt-1">Full tabular audit of course enrollments, examination scores, and grade points.</p>
+            </div>
+            <a href="/export/grades.csv" download class="mt-5 w-full py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs text-center flex items-center justify-center space-x-2 transition shadow-sm">
+                <i class="fa-solid fa-download"></i>
+                <span>Download grades_export.csv</span>
+            </a>
+        </div>
+
+        <!-- Export 3: Full JSON Snapshot -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg mb-3">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">Relational Database JSON Backup</h3>
+                <p class="text-xs text-slate-500 mt-1">Complete nested JSON backup including departments, students, courses, and enrollments.</p>
+            </div>
+            <a href="/export/backup.json" download class="mt-5 w-full py-2.5 px-4 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-semibold text-xs text-center flex items-center justify-center space-x-2 transition shadow-sm">
+                <i class="fa-solid fa-code"></i>
+                <span>Download database_backup.json</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Dean's Honor Roll Table with Dynamic GPA Filter -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900 flex items-center">
+                    <i class="fa-solid fa-award text-amber-500 mr-2"></i> Dean's Honor Roll Rankings
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Students who earned exceptional academic performance honors</p>
+            </div>
+
+            <!-- Interactive GPA Slider -->
+            <div class="flex items-center space-x-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+                <span class="text-xs font-semibold text-slate-500">Min GPA:</span>
+                <input type="range" id="gpaSlider" min="3.0" max="4.0" step="0.1" value="3.5" oninput="updateGpaFilter(this.value)" class="w-32 accent-blue-600 cursor-pointer">
+                <span id="gpaValueDisplay" class="text-xs font-bold font-mono text-blue-700 bg-white px-2 py-0.5 rounded border border-slate-200">3.50</span>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm" id="honorTable">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                        <th class="py-3 px-6">Rank</th>
+                        <th class="py-3 px-6">Student ID</th>
+                        <th class="py-3 px-6">Full Name</th>
+                        <th class="py-3 px-6">Email</th>
+                        <th class="py-3 px-6 text-center">Credits Earned</th>
+                        <th class="py-3 px-6 text-right">Cumulative GPA</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700" id="honorTableBody">
+                    {% for h in honors %}
+                    <tr class="hover:bg-slate-50/80 transition honor-row" data-gpa="{{ h.cumulative_gpa }}">
+                        <td class="py-3.5 px-6 font-bold text-slate-900">
+                            {% if loop.index == 1 %}
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700 text-xs font-extrabold">1</span>
+                            {% elif loop.index == 2 %}
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-xs font-extrabold">2</span>
+                            {% elif loop.index == 3 %}
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-extrabold">3</span>
+                            {% else %}
+                                <span class="text-slate-400 pl-1.5">{{ loop.index }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3.5 px-6 font-mono text-xs font-bold text-blue-700">{{ h.student_code }}</td>
+                        <td class="py-3.5 px-6 font-semibold text-slate-900">{{ h.student_name }}</td>
+                        <td class="py-3.5 px-6 text-slate-500">{{ h.email }}</td>
+                        <td class="py-3.5 px-6 text-center font-medium">{{ h.credits_earned }} hrs</td>
+                        <td class="py-3.5 px-6 text-right">
+                            <span class="inline-block px-2.5 py-1 rounded-md text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                {{ "%.2f"|format(h.cumulative_gpa) }} / 4.0
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-10 text-slate-400">
+                            No students meet the Dean's Honor Roll threshold.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Department Summary Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100">
+            <h3 class="text-lg font-bold text-slate-900">Department Performance Summary</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Curriculum distribution and aggregate student evaluation</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                        <th class="py-3 px-6">Dept Code</th>
+                        <th class="py-3 px-6">Department Name</th>
+                        <th class="py-3 px-6 text-center">Courses Offered</th>
+                        <th class="py-3 px-6 text-center">Total Enrollments</th>
+                        <th class="py-3 px-6 text-right">Average Score</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for d in departments %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3.5 px-6 font-mono font-bold text-blue-700 text-xs">{{ d.dept_code }}</td>
+                        <td class="py-3.5 px-6 font-semibold text-slate-800">{{ d.dept_name }}</td>
+                        <td class="py-3.5 px-6 text-center">{{ d.total_courses }}</td>
+                        <td class="py-3.5 px-6 text-center font-bold">{{ d.total_enrollments }}</td>
+                        <td class="py-3.5 px-6 text-right">
+                            <span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700">
+                                {{ "%.1f"|format(d.avg_score) }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateGpaFilter(val) {
+        const threshold = parseFloat(val);
+        document.getElementById('gpaValueDisplay').innerText = threshold.toFixed(2);
+        const rows = document.querySelectorAll('.honor-row');
+        let visibleCount = 0;
+        rows.forEach(r => {
+            const gpa = parseFloat(r.getAttribute('data-gpa'));
+            if (gpa >= threshold) {
+                r.style.display = '';
+                visibleCount++;
+            } else {
+                r.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}
